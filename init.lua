@@ -13,7 +13,7 @@ end
 
 -- Setup pwm for pin 1,2,3
 gpio.mode(0, gpio.OUTPUT)
-gpio.write(0, gpio.LOW)
+gpio.write(0, gpio.HIGH)
 
 pwm.setup(1, 100, 0)
 pwm.setup(2, 100, 0)
@@ -24,7 +24,7 @@ pwm.start(3)
 
 -- Retrun the actual pwm value of the pins
 function getLed()
-    return red .. "," .. green .. "," .. blue
+    return "{ \"red\": " .. red .. ", \"green\" :" .. green .. ", \"blue\": " .. blue .. "}"
 end
 
 -- Your Wifi connection data
@@ -44,15 +44,17 @@ local function connect(conn, data)
                     red = tonumber(params["r"])
                     green = tonumber(params["g"])
                     blue = tonumber(params["b"])
-                    print(led())
+                    print(getLed())
                 else
-                    cn:send("Wrong parameter")
+                    cn:send("HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=UTF-8\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: X-Requested-With\r\n\r\n{\"message\":\"Wrong parameter\"}")
                 end
             end
 
+            led()
+
             -- Send the actual values.
-            cn:send(getLed())
-   
+            cn:send("HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=UTF-8\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: X-Requested-With\r\n\r\n" .. getLed())
+
             -- Close the connection for the request
             cn:close()
         end)
